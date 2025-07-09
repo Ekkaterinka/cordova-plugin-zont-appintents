@@ -1,0 +1,21 @@
+{
+  "name": "cordova-plugin-zont-appintents",
+  "version": "1.0.0",
+  "description": "Cordova pugin zont AppIntents",
+  "cordova": {
+    "id": "cordova-plugin-zont-appintents",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "appintents",
+    "ios"
+  ],
+  "author": "Ekaterina Belova",
+  "license": "ISC"
+}
