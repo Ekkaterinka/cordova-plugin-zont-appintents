@@ -4,7 +4,7 @@ import AppIntents
 struct ShortcutsProvider: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
-            intent: SiriAppIntent(),
+            intent: siriAppIntent(),
             phrases: ["Открой машину"],
             shortTitle: "Откроет машину",
             systemImageName: "zont"

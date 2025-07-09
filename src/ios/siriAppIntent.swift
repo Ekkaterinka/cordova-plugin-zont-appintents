@@ -1,6 +1,6 @@
 import AppIntents
 
-struct SiriAppIntent: AppIntent {
+struct siriAppIntent: AppIntent {
     static var title= LocalizedStringResource("Открой машину")
     static var description = IntentDescription("Откроет машину")
     
@@ -15,7 +15,7 @@ struct SiriAppIntent: AppIntent {
     }
     
     func perform() async throws -> some IntentResult {
-        SiriPlugin.executeJSFunction(
+        siriPlugin.executeJSFunction(
             functionName: functionName,
             parameters: parameters
         )

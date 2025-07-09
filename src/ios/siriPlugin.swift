@@ -2,16 +2,16 @@ import Foundation
 import AppIntents
 import Cordova
 
-@objc(SiriPlugin)
-class SiriPlugin: CDVPlugin {
+@objc(siriPlugin)
+class siriPlugin: CDVPlugin {
     
     static var commandDelegate: CDVCommandDelegate?
     static var commandCallback: String?
     
     @objc(registerForSiriCommands:)
     func registerForSiriCommands(command: CDVInvokedUrlCommand) {
-        SiriPlugin.commandDelegate = self.commandDelegate
-        SiriPlugin.commandCallback = command.callbackId
+        siriPlugin.commandDelegate = self.commandDelegate
+        siriPlugin.commandCallback = command.callbackId
         
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
         self.commandDelegate?.send(pluginResult, callbackId: command.callbackId)

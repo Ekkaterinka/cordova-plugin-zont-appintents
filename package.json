@@ -1,7 +1,7 @@
 {
   "name": "cordova-plugin-zont-appintents",
   "version": "1.0.0",
-  "description": "Cordova pugin zont AppIntents",
+  "description": "Cordova pugin zont appintents",
   "cordova": {
     "id": "cordova-plugin-zont-appintents",
     "platforms": [
