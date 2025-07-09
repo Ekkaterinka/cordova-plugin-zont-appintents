@@ -7,7 +7,6 @@
         <clobbers target="siriPlugin" />
     </js-module>
     <platform name="ios">
-        <source-file src="src/ios/siriAppShortcuts.swift" />
         <config-file target="*-Info.plist" parent="NSAppIntents">
             <array>
                 <string>siriAppIntent</string>
