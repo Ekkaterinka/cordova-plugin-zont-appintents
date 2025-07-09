@@ -22,6 +22,6 @@
         <source-file src="src/ios/siriAppIntent.swift" />
         <source-file src="src/ios/siriAppShortcuts.swift" />
         <framework src="Foundation.framework"/>
-        <framework src="AppIntents" type="podspec" spec="~> 1.0" />
+        <framework src="AppIntents.framework" />
     </platform>
 </plugin>           
