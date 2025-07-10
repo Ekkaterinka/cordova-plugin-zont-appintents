@@ -1,24 +1,21 @@
 import AppIntents
 
+@available(iOS 16.0, *)
 struct siriAppIntent: AppIntent {
-    static var title= LocalizedStringResource("Открой машину")
+    static var title = LocalizedStringResource("Открой машину")
     static var description = IntentDescription("Откроет машину")
     
     @Parameter(title: "Function Name")
     var functionName: String
-    
-    @Parameter(title: "Parameters", default: [:])
-    var parameters: [String: String]
+
     
     static var parameterSummary: some ParameterSummary {
-        Summary("Execute \(\.$functionName) with parameters \(\.$parameters)")
+        Summary("Execute")
     }
     
     func perform() async throws -> some IntentResult {
         siriPlugin.executeJSFunction(
-            functionName: functionName,
-            parameters: parameters
-        )
+            functionName: functionName)
         return .result()
     }
 }

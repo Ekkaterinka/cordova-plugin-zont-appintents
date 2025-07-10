@@ -2,6 +2,7 @@ import Foundation
 import AppIntents
 import Cordova
 
+@available(iOS 16.0, *)
 @objc(siriPlugin)
 class siriPlugin: CDVPlugin {
     
@@ -21,9 +22,6 @@ class siriPlugin: CDVPlugin {
         guard let callbackId = commandCallback, let delegate = commandDelegate else { return }
         
         var resultDict: [String: Any] = ["functionName": functionName]
-        if let params = parameters {
-            resultDict["parameters"] = params
-        }
         
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: resultDict)
         pluginResult?.keepCallback = true

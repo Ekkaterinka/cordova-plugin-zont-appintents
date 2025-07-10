@@ -13,8 +13,8 @@
             </array>
         </config-file>
         <config-file parent="/*" target="config.xml">
-            <feature name="cordova-plugin-zont-appintents">
-                <param name="ios-package" value="cordova-plugin-zont-appintents" />
+            <feature name="siriPlugin">
+                <param name="ios-package" value="siriPlugin" />
             </feature>
         </config-file>
         <header-file src="src/ios/siriPlugin.h"/>
