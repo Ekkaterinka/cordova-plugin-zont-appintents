@@ -1,27 +1,27 @@
 import Foundation
 import AppIntents
-import Cordova
+
 
 @available(iOS 16.0, *)
-@objc(siriPlugin)
-class siriPlugin: CDVPlugin {
+@objc(CDVSiriPlugin)
+class CDVSiriPlugin: CDVPlugin {
     
     static var commandDelegate: CDVCommandDelegate?
     static var commandCallback: String?
     
     @objc(registerForSiriCommands:)
-    func registerForSiriCommands(command: CDVInvokedUrlCommand) {
-        siriPlugin.commandDelegate = self.commandDelegate
-        siriPlugin.commandCallback = command.callbackId
+    func registerForSiriCommands(_ command: CDVInvokedUrlCommand) {
+        CDVSiriPlugin.commandDelegate = self.commandDelegate
+        CDVSiriPlugin.commandCallback = command.callbackId
         
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
         self.commandDelegate?.send(pluginResult, callbackId: command.callbackId)
     }
     
-    static func executeJSFunction(functionName: String, parameters: [String: Any]?) {
+    static func executeJSFunction(functionName: String) {
         guard let callbackId = commandCallback, let delegate = commandDelegate else { return }
         
-        var resultDict: [String: Any] = ["functionName": functionName]
+        let resultDict: [String: Any] = ["functionName": functionName]
         
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: resultDict)
         pluginResult?.keepCallback = true

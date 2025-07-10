@@ -1,7 +1,7 @@
 #import <Cordova/CDV.h>
 #import <Cordova/CDVPlugin.h>
 
-@interface siriPlugin : CDVPlugin
+@interface CDVSiriPlugin : CDVPlugin
 
 - (void)registerForSiriCommands:(CDVInvokedUrlCommand *)command;
 

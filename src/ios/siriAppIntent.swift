@@ -14,7 +14,7 @@ struct siriAppIntent: AppIntent {
     }
     
     func perform() async throws -> some IntentResult {
-        siriPlugin.executeJSFunction(
+        CDVSiriPlugin.executeJSFunction(
             functionName: functionName)
         return .result()
     }
