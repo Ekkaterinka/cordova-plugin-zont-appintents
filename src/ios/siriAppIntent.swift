@@ -14,6 +14,12 @@ struct siriAppIntent: AppIntent {
     }
     
     func perform() async throws -> some IntentResult {
+        guard TokenManager.shared.hasValidToken() else {
+            throw NSError(domain: "com.yourapp.siri", code: 401, userInfo: [
+                NSLocalizedDescriptionKey: "Authentication required"
+            ])
+        }
+        
         CDVSiriPlugin.executeJSFunction(
             functionName: functionName)
         return .result()
