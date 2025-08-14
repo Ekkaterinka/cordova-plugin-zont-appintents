@@ -8,8 +8,8 @@ var exec = require('cordova/exec');
 var exec = require('cordova/exec');
 
 module.exports = {
-    registerForSiriCommands: function (successCallback, failCallback) {
-        exec(successCallback, failCallback, "ZontAppintents", "registerForSiriCommands");
+    registerForSiriCommands: function (options, successCallback, failCallback) {
+        exec(successCallback, failCallback, "ZontAppintents", "registerForSiriCommands", [options]);
     },
     setParamsShort: function (successCallback, failCallback) {
         exec(successCallback, failCallback, "wifi", "getConnectedInfo", [options]);
