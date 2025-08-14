@@ -4,7 +4,7 @@
     <description>Cordova Plugin fo appintents IOS16+</description>
     <keywords>appIntents, ios</keywords>
     <js-module name="siriPlugin" src="www/siriPlugin.js">
-        <clobbers target="siriPlugin" />
+        <clobbers target="registerForSiriCommands" />
     </js-module>
     <platform name="ios">
         <config-file target="*-Info.plist" parent="NSAppIntents">

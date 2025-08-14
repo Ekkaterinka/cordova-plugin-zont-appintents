@@ -8,6 +8,11 @@ class CDVSiriPlugin: CDVPlugin {
     
     static var commandDelegate: CDVCommandDelegate?
     static var commandCallback: String?
+    static var title: String?
+    static var description: String?
+    static var is_auth: Bool?
+    static var list_action: Array<Any>?
+    static var list_device: Array<Any>?
 
     @objc(setToken:)
     func setToken(command: CDVInvokedUrlCommand) {
@@ -22,6 +27,11 @@ class CDVSiriPlugin: CDVPlugin {
         let result = CDVPluginResult(status: .ok)
         self.commandDelegate?.send(result, callbackId: command.callbackId)
     }
+
+    @objc(setParamsShort:)
+    func setParamsShort(_ command: CDVInvokedUrlCommand) {
+        return [title:command.arguments[0] , description: command.arguments[1], is_auth: command.arguments[2]]
+    }
     
     @objc(registerForSiriCommands:)
     func registerForSiriCommands(_ command: CDVInvokedUrlCommand) {
@@ -30,6 +40,14 @@ class CDVSiriPlugin: CDVPlugin {
             self.commandDelegate?.send(result, callbackId: command.callbackId)
             return
         }
+
+        [title:command.arguments[0] , description: command.arguments[1], is_auth: command.arguments[2]]
+
+        CDVSiriPlugin.title = command.arguments[0]
+        CDVSiriPlugin.description = command.arguments[1]
+        CDVSiriPlugin.is_auth = command.arguments[2]
+        CDVSiriPlugin.list_action = command.arguments[3]
+        CDVSiriPlugin.list_devices = command.arguments[4]
         
         CDVSiriPlugin.commandDelegate = self.commandDelegate
         CDVSiriPlugin.commandCallback = command.callbackId
