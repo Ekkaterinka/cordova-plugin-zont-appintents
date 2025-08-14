@@ -11,9 +11,9 @@ module.exports = {
     registerForSiriCommands: function (options, successCallback, failCallback) {
         exec(successCallback, failCallback, "ZontAppintents", "registerForSiriCommands", [options]);
     },
-    setParamsShort: function (successCallback, failCallback) {
-        exec(successCallback, failCallback, "wifi", "getConnectedInfo", [options]);
-    },
+    // setParamsShort: function (successCallback, failCallback) {
+    //     exec(successCallback, failCallback, "wifi", "getConnectedInfo", [options]);
+    // },
     //   scan: function (options, successCallback, failCallback) {
     //     exec(successCallback, failCallback, "wifi", "scan", [options]);
     //   },
