@@ -3,7 +3,6 @@
 
 @interface CDVSiriPlugin : CDVPlugin
 
-- (void)registerForSiriCommands:(CDVInvokedUrlCommand *)args;
-- (void)setParamsShort:(CDVInvokedUrlCommand *)command;
+- (void)registerForSiriCommands:(CDVInvokedUrlCommand *)command;
 
 @end

@@ -14,40 +14,15 @@ class CDVSiriPlugin: CDVPlugin {
     static var list_action: Array<Any>?
     static var list_device: Array<Any>?
 
-    @objc(setToken:)
-    func setToken(command: CDVInvokedUrlCommand) {
-        guard let token = command.argument(at: 0) as? String else {
-            let result = CDVPluginResult(status: .error, messageAs: "Token is required")
-            self.commandDelegate?.send(result, callbackId: command.callbackId)
-            return
-        }
-        
-        TokenManager.shared.token = token
-        
-        let result = CDVPluginResult(status: .ok)
-        self.commandDelegate?.send(result, callbackId: command.callbackId)
-    }
-
-    @objc(setParamsShort:)
-    func setParamsShort(_ command: CDVInvokedUrlCommand) {
-        return [title:command.arguments[0] , description: command.arguments[1], is_auth: command.arguments[2]]
-    }
     
     @objc(registerForSiriCommands:)
     func registerForSiriCommands(_ command: CDVInvokedUrlCommand) {
-        guard TokenManager.shared.hasValidToken() else {
-            let result = CDVPluginResult(status: .error, messageAs: "No valid token available")
-            self.commandDelegate?.send(result, callbackId: command.callbackId)
-            return
-        }
 
-        [title:command.arguments[0] , description: command.arguments[1], is_auth: command.arguments[2]]
-
-        CDVSiriPlugin.title = command.arguments[0]
-        CDVSiriPlugin.description = command.arguments[1]
-        CDVSiriPlugin.is_auth = command.arguments[2]
-        CDVSiriPlugin.list_action = command.arguments[3]
-        CDVSiriPlugin.list_devices = command.arguments[4]
+        CDVSiriPlugin.title = command.options[0]
+        CDVSiriPlugin.description = command.options[1]
+        CDVSiriPlugin.is_auth = command.options[2]
+        CDVSiriPlugin.list_action = command.options[3]
+        CDVSiriPlugin.list_devices = command.options[4]
         
         CDVSiriPlugin.commandDelegate = self.commandDelegate
         CDVSiriPlugin.commandCallback = command.callbackId
