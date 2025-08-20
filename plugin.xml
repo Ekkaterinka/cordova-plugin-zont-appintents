@@ -21,6 +21,7 @@
         <source-file src="src/ios/CDVSiriPlugin.swift" />
         <source-file src="src/ios/siriAppIntent.swift" />
         <source-file src="src/ios/siriAppShortcuts.swift" />
+        <source-file src="src/ios/siriDinamicOptions.swift" />
         <framework src="Foundation.framework"/>
         <framework src="AppIntents.framework" />
     </platform>

@@ -1,5 +1,6 @@
 import AppIntents
 
+@available(iOS 16.0, *)
 struct DeviceActionIntent: AppIntent {
     static var title: LocalizedStringResource = "Управление устройством"
 
@@ -13,9 +14,13 @@ struct DeviceActionIntent: AppIntent {
         guard let items = UserDefaults.standard.array(forKey: "device_shortcuts") as? [[String: Any]],
               let device = items.first(where: { ($0["device_id"] as? Int) == deviceId }),
               let apiUrl = device["api_url"] as? String,
-              let path = apiUrl.replacingOccurrences(of: "{deviceId}", with: device)
-              let url = URL(string: path) else {
+              let deviceId = device["device_id"] as? Int else {
             return .result(value: "Ошибка: не найдено устройство или api_url")
+        }
+
+        let path = apiUrl.replacingOccurrences(of: "{deviceId}", with: "\(deviceId)")
+        guard let url = URL(string: path) else {
+            return .result(value: "Ошибка: не верный URL")
         }
 
         var request = URLRequest(url: url)
