@@ -13,7 +13,8 @@ struct DeviceActionIntent: AppIntent {
         guard let items = UserDefaults.standard.array(forKey: "device_shortcuts") as? [[String: Any]],
               let device = items.first(where: { ($0["device_id"] as? Int) == deviceId }),
               let apiUrl = device["api_url"] as? String,
-              let url = URL(string: apiUrl) else {
+              let path = apiUrl.replacingOccurrences(of: "{deviceId}", with: device)
+              let url = URL(string: path) else {
             return .result(value: "Ошибка: не найдено устройство или api_url")
         }
 
