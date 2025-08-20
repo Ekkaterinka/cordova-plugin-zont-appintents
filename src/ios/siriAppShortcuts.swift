@@ -1,13 +1,17 @@
 import AppIntents
 
 @available(iOS 16.0, *)
-struct ShortcutsProvider: AppShortcutsProvider {
+struct DeviceShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
-        AppShortcut(
-            intent: siriAppIntent(),
-            phrases: ["Открой машину"],
-            shortTitle: "Откроет машину",
-            systemImageName: "zont"
-        )
+        [
+            AppShortcut(
+                intent: DeviceActionIntent(),
+                phrases: [
+                    "Выполнить действие с устройством"
+                ],
+                shortTitle: "Устройства",
+                systemImageName: "bolt.fill"
+            )
+        ]
     }
 }
