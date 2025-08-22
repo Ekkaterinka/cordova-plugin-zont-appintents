@@ -1,15 +1,15 @@
 import AppIntents
 
 @available(iOS 16.0, *)
-struct AppShortcutsProvider: AppShortcutsProvider {
+struct ShortcutsProvider: AppShortcutsProvider {
     @AppShortcutsBuilder
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
-                intent: DeviceActionIntent(),
+            intent: DeviceActionIntent(),
                 phrases: [
-                    "Выполнить действие с устройством"
+                    "Запуск двигателя автомобиля"
                 ],
                 shortTitle: "Устройства"
-            )
+        )
     }
 }

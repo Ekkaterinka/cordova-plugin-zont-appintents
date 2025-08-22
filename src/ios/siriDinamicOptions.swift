@@ -20,27 +20,11 @@ struct Short: AppEntity {
 @available(iOS 16.0, *)
 struct DeviceQuery: EntityQuery {
     func entities(for identifiers: [Short.ID]) async throws -> [Short] {
-        guard let items = UserDefaults.standard.array(forKey: "device_shortcuts") as? [[String: Any]] else {
-            return []
-        }
-        
-        return items.compactMap { item in
-            guard let id = item["device_id"] as? Int,
-                  let device_name = item["device_name"] as? String else { return nil }
-            return Short(device_name: device_name, id: id)
-        }.filter { identifiers.contains($0.id) }
+        loadDevices().filter { identifiers.contains($0.id) }
     }
     
     func suggestedEntities() async throws -> [Short] {
-        guard let items = UserDefaults.standard.array(forKey: "device_shortcuts") as? [[String: Any]] else {
-            return []
-        }
-        
-        return items.compactMap { item in
-            guard let id = item["device_id"] as? Int,
-                  let device_name = item["device_name"] as? String else { return nil }
-            return Short(device_name: device_name, id: id)
-        }
+        loadDevices()
     }
 }
 
@@ -52,9 +36,9 @@ struct DeviceOptionsProvider: DynamicOptionsProvider {
             return []
         }
 
-        let filtered = items.filter { ($0["in_auth"] as? Bool) == true }
+        let filtered = items.filter { ($0["is_auth"] as? Bool) != true }
 
-        let res = filtered.compactMap { item -> Short? in
+        return filtered.compactMap { item -> Short? in
             guard let id = item["device_id"] as? Int,
                   let device_name = item["device_name"] as? String else { return nil }
 
@@ -64,6 +48,19 @@ struct DeviceOptionsProvider: DynamicOptionsProvider {
             )
         }
 
-        return res
     }
+}
+
+
+@available(iOS 16.0, *)
+private func loadDevices() -> [Short] {
+    guard let items = UserDefaults.standard.array(forKey: "device_shortcuts") as? [[String: Any]] else {
+        return []
+    }
+    return items.compactMap { item in
+        guard let id = item["device_id"] as? Int,
+              let device_name = item["device_name"] as? String else { return nil }
+        return Short(device_name: device_name, id: id)
+    }
+    
 }
