@@ -21,8 +21,15 @@
         <source-file src="src/ios/CDVSiriPlugin.swift" />
         <source-file src="src/ios/siriAppIntent.swift" />
         <source-file src="src/ios/siriAppShortcuts.swift" />
-        <source-file src="src/ios/siriDinamicOptions.swift" />
+        <source-file src="src/ios/utils.swift" />
+        <source-file src="src/ios/dinamic-options/circuitsTargetTemp.swift" />
+        <source-file src="src/ios/dinamic-options/controlsTrigger.swift" />
+        <source-file src="src/ios/dinamic-options/modesActivate.swift" />
+        <source-file src="src/ios/dinamic-options/quardZonesActivate.swift" />
+        <source-file src="src/ios/dinamic-options/scenariosActivate.swift" />
+        <source-file src="src/ios/dinamic-options/siriDinamicOptionsDevice.swift" />
         <framework src="Foundation.framework"/>
         <framework src="AppIntents.framework" />
+        <framework src="SwiftUI.framework" />
     </platform>
 </plugin>           
