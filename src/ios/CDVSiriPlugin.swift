@@ -3,7 +3,7 @@ import AppIntents
 import SwiftUI
 
 
-@available(iOS 16.0, *)
+@available(iOS 18.0, *)
 @objc(CDVSiriPlugin)
 class CDVSiriPlugin: CDVPlugin {
     @objc(registerForSiriCommands:)
