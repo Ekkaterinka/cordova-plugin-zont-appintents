@@ -8,92 +8,50 @@ struct ShortcutsProvider: AppShortcutsProvider {
         AppShortcut(
             intent: VehicleGuardActionIntentEnable(),
             phrases: [
-                "\(.applicationName) Поставить на охрану автомобиль", "Поставить на охрану автомобиль",
+                "\(.applicationName) Поставить на охрану автомобиль", "\(.applicationName) Авто под охрану",
                 
             ],
-            shortTitle: "Поставить на охрану автомобиль",
+            shortTitle: "Авто под охрану",
             systemImageName: "car.side.lock.fill"
         );
         AppShortcut(
             intent: VehicleGuardActionIntentDisable(),
             phrases: [
-                "\(.applicationName) Снять с охраны автомобиль", "Снять с охраны автомобиль"
+                "\(.applicationName) Снять с охраны автомобиль", "\(.applicationName) Авто снять с охраны"
             ],
-            shortTitle: "Снять с охраны автомобиль",
+            shortTitle: "Авто снять с охраны",
             systemImageName: "car.side.lock.open.fill"
         );
         AppShortcut(
             intent: VehicleStartActionIntent(),
             phrases: [
-                    "\(.applicationName) Запуск двигателя автомобиля", "Запуск двигателя автомобиля"
+                    "\(.applicationName) Запуск двигателя автомобиля", "\(.applicationName) Запуск авто"
                 ],
-            shortTitle: "Запуск двигателя автомобиля",
+            shortTitle: "Запуск авто",
             systemImageName: "car.circle.fill"
-        );
-        AppShortcut(
-            intent: VehicleSirenActionIntentOff(),
-            phrases: [
-                    "\(.applicationName) Выключить сирену"
-                ],
-            shortTitle: "Выключить сирену",
-            systemImageName: "car.top.radiowaves.rear.right.badge.xmark"
-        );
-        
-        AppShortcut(
-            intent: VehicleBlockActionIntentActive(),
-            phrases: [
-                    "\(.applicationName) Включить сирену"
-                ],
-            shortTitle: "Включить сирену",
-            systemImageName: "car.top.radiowaves.rear.right.badge.exclamationmark"
-            
-        );
-        AppShortcut(
-            intent: VehicleBlockActionIntentOff(),
-            phrases: [
-                    "\(.applicationName) Выключить блокировку двигателя"
-                ],
-            shortTitle: "Выключить блокировку двигателя",
-            systemImageName: "engine.combustion.fill"
-        );
-        AppShortcut(
-            intent: VehicleBlockActionIntentActive(),
-            phrases: [
-                    "\(.applicationName) Включить блокировку двигателя"
-                ],
-            shortTitle: "Включить блокировку двигателя",
-            systemImageName: "engine.combustion.badge.exclamationmark.fill"
         );
         AppShortcut(
             intent: ControlCircuitsActionIntent(),
             phrases: [
                     "\(.applicationName) Установить температуру в контуре отопления"
                 ],
-            shortTitle: "Установить температуру в контуре отопления",
+            shortTitle: "t° контура отопления",
             systemImageName: "degreesign.celsius"
         );
         AppShortcut(
             intent: ControlModesActionIntent(),
             phrases: [
-                    "\(.applicationName) Активация режима отопления"
+                    "\(.applicationName) Активация режима отопления", "\(.applicationName) Активация режима"
                 ],
-            shortTitle: "Активация режима отопления",
+            shortTitle: "Активация режима",
             systemImageName: "play.house.fill"
-        );
-        AppShortcut(
-            intent: ControlTriggerActionIntentSimple(),
-            phrases: [
-                    "\(.applicationName) Активация простой кнопки"
-                ],
-            shortTitle: "Активация простой кнопки",
-            systemImageName: "button.horizontal.top.press"
         );
         AppShortcut(
             intent: ControlTriggerActionIntentComplex(),
             phrases: [
-                    "\(.applicationName) Активация сложной кнопки"
+                    "\(.applicationName) Активация кнопки"
                 ],
-            shortTitle: "Активация сложной кнопки",
+            shortTitle: "Активация кнопки",
             systemImageName: "button.horizontal.top.press.fill"
         );
         AppShortcut(
@@ -115,10 +73,11 @@ struct ShortcutsProvider: AppShortcutsProvider {
         AppShortcut(
             intent: ControlScenariosActionIntent(),
             phrases: [
-                    "\(.applicationName) Запуск предустановленного сценария"
+                    "\(.applicationName) Запуск сценария"
                 ],
-            shortTitle: "Запуск предустановленного сценария",
+            shortTitle: "Запуск сценария",
             systemImageName: "cursorarrow.click.2"
         );
     }
 }
+
