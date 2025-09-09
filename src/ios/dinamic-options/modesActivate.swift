@@ -7,8 +7,6 @@ struct DeviceElementControlModes: AppEntity, Identifiable {
     static let defaultQuery = DeviceElementControlQueryModes()
     var id: Int
 
-    @Property(title: "Choose")
-    
     var element_name: String
     
     var displayRepresentation: DisplayRepresentation {
@@ -24,13 +22,13 @@ struct DeviceElementControlModes: AppEntity, Identifiable {
 struct DeviceElementControlQueryModes: EntityQuery {
     @IntentParameterDependency<ControlModesActionIntent>(\.$device)
     var device
-
+    
     func entities(for identifiers: [Int]) async throws -> [DeviceElementControlModes] {
-        loadDevicesControlModes(device: device?.device).filter { identifiers.contains($0.id) }
+        return loadDevicesControlModes(device: device?.device).filter { identifiers.contains($0.id) }
     }
     
     func suggestedEntities() async throws -> [DeviceElementControlModes] {
-        loadDevicesControlModes(device: device?.device)
+        return loadDevicesControlModes(device: device?.device)
     }
     func defaultResult() async -> DeviceElementControlModes? {
         try? await suggestedEntities().first
@@ -41,6 +39,8 @@ struct DeviceElementControlQueryModes: EntityQuery {
 struct DeviceElementActionProviderModes: DynamicOptionsProvider {
     @IntentParameterDependency<ControlModesActionIntent>(\.$device)
     var device
+    
+  
 
     let targetType: TypeIntent
     init(for type: TypeIntent) {
@@ -48,30 +48,11 @@ struct DeviceElementActionProviderModes: DynamicOptionsProvider {
     }
     
     func results() async throws -> [DeviceElementControlModes] {
-        guard let device else {
+        guard let intent = device else {
             return []
         }
     
-        guard let items = UserDefaults.standard.array(forKey: "ZONT_devices") as? [[String: Any]] else {
-            return []
-        }
-
-        let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.device.id }
-        
-        guard let filtered2:[String: Any] = filtered1.filter({ ($0["type"] as? String) == targetType.rawValue }).first,
-              let entity_ids = filtered2["entity_ids"] as? [[String: Any]] else {
-            return []
-        }
-        
-        return entity_ids.compactMap { item -> DeviceElementControlModes? in
-            guard let id = item["entity_id"] as? Int,
-                  let element_name = item["entity_name"] as? String else { return nil }
-
-            return DeviceElementControlModes(
-                element_name: element_name,
-                id: id
-            )
-        }
+        return loadDevicesControlModes(device: intent.device)
     }
 }
 
@@ -84,10 +65,11 @@ private func loadDevicesControlModes(device: DeviceEntity?) -> [DeviceElementCon
     guard let items = UserDefaults.standard.array(forKey: "ZONT_devices") as? [[String: Any]] else {
         return []
     }
-
-    let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.id }
+    
+    let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.device_id }
     
     guard let filtered2:[String: Any] = filtered1.filter({ ($0["type"] as? String) == device.target_type }).first,
+   
           let entity_ids = filtered2["entity_ids"] as? [[String: Any]] else {
         return []
     }
