@@ -48,30 +48,10 @@ struct DeviceElementActionProviderCircuits: DynamicOptionsProvider {
     }
     
     func results() async throws -> [DeviceElementControlCircuits] {
-        guard let device else {
+        guard let intent = device else {
             return []
         }
-    
-        guard let items = UserDefaults.standard.array(forKey: "ZONT_devices") as? [[String: Any]] else {
-            return []
-        }
-
-        let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.device.id }
-        
-        guard let filtered2:[String: Any] = filtered1.filter({ ($0["type"] as? String) == targetType.rawValue }).first,
-              let entity_ids = filtered2["entity_ids"] as? [[String: Any]] else {
-            return []
-        }
-        
-        return entity_ids.compactMap { item -> DeviceElementControlCircuits? in
-            guard let id = item["entity_id"] as? Int,
-                  let element_name = item["entity_name"] as? String else { return nil }
-
-            return DeviceElementControlCircuits(
-                element_name: element_name,
-                id: id
-            )
-        }
+        return loadDevicesControlCircuits(device: intent.device)
     }
 }
 
@@ -85,7 +65,7 @@ private func loadDevicesControlCircuits(device: DeviceEntity?) -> [DeviceElement
         return []
     }
 
-    let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.id }
+    let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.device_id }
     
     guard let filtered2:[String: Any] = filtered1.filter({ ($0["type"] as? String) == device.target_type }).first,
           let entity_ids = filtered2["entity_ids"] as? [[String: Any]] else {
