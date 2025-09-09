@@ -22,7 +22,6 @@
         <source-file src="src/ios/CDVSiriPlugin.swift" />
         <source-file src="src/ios/siriAppIntent.swift" />
         <source-file src="src/ios/siriAppShortcuts.swift" />
-        <source-file src="src/ios/utils.swift" />
         <source-file src="src/ios/dinamic-options/circuitsTargetTemp.swift" />
         <source-file src="src/ios/dinamic-options/controlsTrigger.swift" />
         <source-file src="src/ios/dinamic-options/modesActivate.swift" />
