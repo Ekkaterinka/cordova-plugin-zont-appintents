@@ -427,7 +427,7 @@ struct ControlTriggerActionIntentComplex: AppIntent {
     @Parameter(
         title: "Кнопка",
         description: "Выберите кнопку управления",
-        default: DeviceElementControlTriggerComplex(element_name: "Выбор", id: -1, entity_type: "nil"),
+        default: DeviceElementControlTriggerComplex(element_name: "Выбор", id: -1),
         optionsProvider: DeviceElementActionProviderTriggerComplex(for: .controls_trigger)
     )
     var button: DeviceElementControlTriggerComplex
