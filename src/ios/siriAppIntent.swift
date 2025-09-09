@@ -2,14 +2,81 @@ import AppIntents
 import SwiftUI
 
 @available(iOS 18.0, *)
+private func performDeviceRequest(device: DeviceEntity, apiUrl: String, funcParse: ([String: Any])->String, params: [String: Any]? = nil) async throws -> String {
+    guard device.device_id != -1 else {
+        return "Выберите устройство"
+    }
+    
+    guard let token = UserDefaults.standard.object(forKey: "ZONT_token") as? String else {
+        return "Пожалуйста авторизуйтесь в приложении ZONT"
+    }
+    
+    //zont.microline.ru
+    
+    let baseUrl = "https://my.zont.online/api/widget/v3"
+
+    guard let url = URL(string: baseUrl + apiUrl) else {
+        return "Ошибка: не верный URL"
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.addValue("\(token)", forHTTPHeaderField: "X-ZONT-Token")
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.addValue("app-widget-ios", forHTTPHeaderField: "X-ZONT-Client")
+    
+    if let params = params {
+        print("params", params)
+        request.httpBody = try JSONSerialization.data(withJSONObject: params, options: [])
+    }
+
+    let (data, _) = try await URLSession.shared.data(for: request)
+    guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+        return String(data: data, encoding: .utf8) ?? "Нет ответа"
+    }
+    print("performDeviceRequest", json)
+    if json["ok"] as? Bool == true {
+        return funcParse(json)
+    }  else {
+        if json["error_ui"] != nil {
+            return "Ошибка: \(json["error_ui"] ?? ""))"
+        } else if json["error"] != nil {
+            switch json["error"] as? String {
+            case "bad_device_response":
+                return "прибор ответил ошибкой"
+            case "command_failed":
+                return "Команда не выполнена"
+            case "command_ok_confirmation_not_received":
+                return "Команда отправлена, но подтверждение не получено"
+            case "device_is_offline":
+                return "устройство офлайн"
+            case "device_not_found":
+                return "устройство не найдено"
+            case "timeout":
+                return "таймаут"
+            case "unsupported_device_type":
+                return "тип устройства не поддерживается"
+            case "engine_is_already_running":
+                return "двигатель уже запущен"
+            default:
+                return "Ошибка запроса: \(json["error"] ?? ""))"
+            }
+        } else {
+            return "Устройство не на связи"
+        }
+    }
+}
+
+
+@available(iOS 18.0, *)
 struct VehicleGuardActionIntentEnable: AppIntent {
-    static var title: LocalizedStringResource = "Поставить на охрану автомобиль"
+    static var title: LocalizedStringResource = "Авто под охрану"
     static var description: IntentDescription = "Изменяет состояние охраны"
 
     @Parameter(
         title: "Устройство",
         description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .vehicle_guard),
+        default: TypeIntent.vehicle_guard.defaultDeviceValue(),
         optionsProvider: DeviceActionProvider(for: .vehicle_guard))
     
     var device: DeviceEntity
@@ -46,11 +113,13 @@ struct VehicleGuardActionIntentEnable: AppIntent {
     }
 
     func perform() async throws -> some ProvidesDialog & IntentResult {
-        if device.id == -1{
-            device = try await $device.requestValue("Выберите устройство")
+        DeviceQueryContext.shared.targetType = .vehicle_guard
+        if device.device_id == -1{
+            return .result(
+                dialog: IntentDialog("Устройства не найдены"))
         }
         
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/vehicle/actions/guard",funcParse: parseResponse, params: ["enable": true])
+        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/vehicle/actions/guard",funcParse: parseResponse, params: ["enable": true])
         
         print("response11", response)
 
@@ -61,13 +130,13 @@ struct VehicleGuardActionIntentEnable: AppIntent {
 
 @available(iOS 18.0, *)
 struct VehicleGuardActionIntentDisable: AppIntent {
-    static var title: LocalizedStringResource = "Снять с охраны автомобиль"
+    static var title: LocalizedStringResource = "Авто снять с охраны"
     static var description: IntentDescription = "Изменяет состояние охраны"
 
     @Parameter(
         title: "Устройство",
         description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .vehicle_guard),
+        default: TypeIntent.vehicle_guard.defaultDeviceValue(),
         optionsProvider: DeviceActionProvider(for: .vehicle_guard))
     
     var device: DeviceEntity
@@ -104,13 +173,15 @@ struct VehicleGuardActionIntentDisable: AppIntent {
     }
 
     func perform() async throws -> some ProvidesDialog & IntentResult {
-        if device.id == -1{
-            device = try await $device.requestValue("Выберите устройство")
+        DeviceQueryContext.shared.targetType = .vehicle_guard
+        if device.device_id == -1{
+            return .result(
+                dialog: IntentDialog("Устройства не найдены"))
         }
         
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/vehicle/actions/guard",funcParse: parseResponse, params: ["enable": false])
+        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/vehicle/actions/guard",funcParse: parseResponse, params: ["enable": false])
         
-        print("response11", response)
+        print("response11", response,device.device_id)
 
         return .result(
             dialog: IntentDialog("\(response)"))
@@ -119,13 +190,13 @@ struct VehicleGuardActionIntentDisable: AppIntent {
 
 @available(iOS 18.0, *)
 struct VehicleStartActionIntent: AppIntent {
-    static var title: LocalizedStringResource = "Запуск двигателя автомобиля"
+    static var title: LocalizedStringResource = "Запуск авто"
     static var description: IntentDescription = "Активация системы автозапуска автомобиля"
     
     @Parameter(
         title: "Устройство",
         description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .vehicle_start),
+        default: TypeIntent.vehicle_start.defaultDeviceValue(),
         optionsProvider: DeviceActionProvider(for: .vehicle_start))
     var device: DeviceEntity
     
@@ -193,9 +264,11 @@ struct VehicleStartActionIntent: AppIntent {
     }
     
     func perform() async throws -> some ProvidesDialog & IntentResult {
+        DeviceQueryContext.shared.targetType = .vehicle_start
   
-        if device.id == -1{
-            device = try await $device.requestValue("Выберите устройство")
+        if device.device_id == -1{
+            return .result(
+                dialog: IntentDialog("Устройства не найдены"))
         }
         
         let coomandStr: [String: Any]
@@ -206,189 +279,13 @@ struct VehicleStartActionIntent: AppIntent {
             coomandStr = ["command": String(describing: commands)]
         }
 
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/vehicle/actions/start", funcParse: parseResponse,params: coomandStr)
+        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/vehicle/actions/start", funcParse: parseResponse,params: coomandStr)
         
-        print("response11", response)
+        print("response11", response,device.device_id)
 
         return .result(
             dialog: .init("\(device.device_name) + \(response)"))
 
-    }
-}
-
-@available(iOS 18.0, *)
-struct VehicleSirenActionIntentEnable: AppIntent {
-    static var title: LocalizedStringResource = "Включить сирену"
-    static var description: IntentDescription = "Контроль состояния автомобильной сирены"
-    
-    @Parameter(
-        title: "Устройство",
-        description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .vehicle_siren),
-        optionsProvider: DeviceActionProvider(for: .vehicle_siren))
-    var device: DeviceEntity
-    
-    init() {}
-    
-    init(device: DeviceEntity) {
-        self.device = device
-    }
-    
-    func parseResponse(_ data: [String: Any]) -> String {
-        if let data_device = data["device"] as? [String: Any],
-           let car_state = data_device["car_state"] as? [String: Any],
-           let siren = car_state["siren"] as? Bool {
-            if siren == true {
-                return "Сирена включена"
-            } else  {
-                return "Сирена выключена"
-            }
-        }
-        return "Нет ответа"
-    }
-
-    func perform() async throws -> some ProvidesDialog & IntentResult {
-        if device.id == -1{
-            device = try await $device.requestValue("Выберите устройство")
-        }
-        
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/vehicle/actions/siren", funcParse: parseResponse, params: ["enable": true])
-        
-        print("response11", response)
-
-        return .result(
-            dialog: IntentDialog("\(response)"))
-    }
-}
-
-@available(iOS 18.0, *)
-struct VehicleSirenActionIntentOff: AppIntent {
-    static var title: LocalizedStringResource = "Выключить сирену"
-    static var description: IntentDescription = "Контроль состояния автомобильной сирены"
-    
-    @Parameter(
-        title: "Устройство",
-        description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .vehicle_siren),
-        optionsProvider: DeviceActionProvider(for: .vehicle_siren))
-    var device: DeviceEntity
-    
-    init() {}
-    
-    init(device: DeviceEntity) {
-        self.device = device
-    }
-    
-    func parseResponse(_ data: [String: Any]) -> String {
-        if let data_device = data["device"] as? [String: Any],
-           let car_state = data_device["car_state"] as? [String: Any],
-           let siren = car_state["siren"] as? Bool {
-            if siren == true {
-                return "Сирена включена"
-            } else  {
-                return "Сирена выключена"
-            }
-        }
-        return "Нет ответа"
-    }
-
-    func perform() async throws -> some ProvidesDialog & IntentResult {
-        if device.id == -1 {
-            device = try await $device.requestValue("Выберите устройство")
-        }
-        
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/vehicle/actions/siren", funcParse: parseResponse, params: ["enable": false])
-        
-        print("response11", response)
-
-        return .result(
-            dialog: IntentDialog("\(response)"))
-    }
-}
-
-@available(iOS 18.0, *)
-struct VehicleBlockActionIntentActive: AppIntent {
-    static var title: LocalizedStringResource = "Включить блокировку двигателя"
-    static var description: IntentDescription = "Активация блокировки транспортного средства"
-    
-    @Parameter(
-        title: "Устройство",
-        description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .vehicle_block),
-        optionsProvider: DeviceActionProvider(for: .vehicle_block))
-    
-    var device: DeviceEntity
-    
-    init() {}
-    
-    init(device: DeviceEntity) {
-        self.device = device
-    }
-    
-    func parseResponse(_ data: [String: Any]) -> String {
-        if let data_device = data["device"] as? [String: Any],
-           let car_state = data_device["car_state"] as? [String: Any],
-           let engine_block = car_state["engine_block"] as? Bool {
-            if engine_block == true {
-                return "Блокировка двигателя включена"
-            } else  {
-                return "Блокировка двигателя выключена"
-            }
-        }
-        return "Нет ответа"
-    }
-
-    func perform() async throws -> some IntentResult & ProvidesDialog {
-        
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/vehicle/actions/block", funcParse: parseResponse, params: ["enable": true])
-        
-        print("response11", response)
-
-        return .result(
-            dialog: IntentDialog("\(response)"))
-    }
-}
-
-@available(iOS 18.0, *)
-struct VehicleBlockActionIntentOff: AppIntent {
-    static var title: LocalizedStringResource = "Выключить блокировку двигателя"
-    static var description: IntentDescription = "Деактивация блокировки транспортного средства"
-    
-    @Parameter(
-        title: "Устройство",
-        description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .vehicle_block),
-        optionsProvider: DeviceActionProvider(for: .vehicle_block))
-    
-    var device: DeviceEntity
-    
-    init() {}
-    
-    init(device: DeviceEntity) {
-        self.device = device
-    }
-    
-    func parseResponse(_ data: [String: Any]) -> String {
-        if let data_device = data["device"] as? [String: Any],
-           let car_state = data_device["car_state"] as? [String: Any],
-           let engine_block = car_state["engine_block"] as? Bool {
-            if engine_block == true {
-                return "Блокировка двигателя включена"
-            } else  {
-                return "Блокировка двигателя выключена"
-            }
-        }
-        return "Нет ответа"
-    }
-
-    func perform() async throws -> some ProvidesDialog & IntentResult {
-        
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/vehicle/actions/block", funcParse: parseResponse, params: ["enable": false])
-        
-        print("response11", response)
-
-        return .result(
-            dialog: .init("\(response)"))
     }
 }
 
@@ -401,7 +298,7 @@ struct ControlCircuitsActionIntent: AppIntent {
     @Parameter(
         title: "Устройство",
         description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .circuits_target_temp),
+        default: TypeIntent.circuits_target_temp.defaultDeviceValue(),
         optionsProvider: DeviceActionProvider(for: .circuits_target_temp))
     var device: DeviceEntity
     
@@ -427,16 +324,18 @@ struct ControlCircuitsActionIntent: AppIntent {
     }
     
     func perform() async throws -> some ProvidesDialog & IntentResult {
-        print("dvvv1", device)
-        if device.id == -1 {
-            print("dvvv")
-            device = try await $device.requestValue("Выберите устройство")
+        
+        DeviceQueryContext.shared.targetType = .circuits_target_temp
+        
+        if device.device_id == -1 {
+            return .result(
+                dialog: IntentDialog("Устройства не найдены"))
         }
         
         if heating_circuit.id == -1 {
-            heating_circuit = try await $heating_circuit.requestValue("Выберите отопительный контур")
+            throw $heating_circuit.needsValueError("Выберите отопительный контур")
         }
-        
+
         func parseResponse(_ data: [String: Any]) -> String {
             if let data_device = data["device"] as? [String: Any],
                let circuits = data_device["circuits"] as? [String: Any],
@@ -446,9 +345,9 @@ struct ControlCircuitsActionIntent: AppIntent {
             return "Нет ответа"
         }
         
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/circuits/\(heating_circuit.id)/actions/target-temp", funcParse: parseResponse,params: ["target_temp": target_temp])
+        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/circuits/\(heating_circuit.id)/actions/target-temp", funcParse: parseResponse,params: ["target_temp": target_temp])
         
-        print("response11", response)
+        print("response11", response,device.device_id)
 
         return .result(
             dialog: .init("\(device.device_name) + \(response)"))
@@ -458,13 +357,13 @@ struct ControlCircuitsActionIntent: AppIntent {
 
 @available(iOS 18.0, *)
 struct ControlModesActionIntent: AppIntent {
-    static var title: LocalizedStringResource = "Активация режима отопления"
+    static var title: LocalizedStringResource = "Активация режима"
     static var description: IntentDescription = "Активирует заданный режим отопления ко всем контурам"
     
     @Parameter(
         title: "Устройство",
         description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .modes_activate),
+        default: TypeIntent.modes_activate.defaultDeviceValue(),
         optionsProvider: DeviceActionProvider(for: .modes_activate))
     var device: DeviceEntity
     
@@ -474,23 +373,25 @@ struct ControlModesActionIntent: AppIntent {
         default: DeviceElementControlModes(element_name: "Выбор", id: -1),
         optionsProvider: DeviceElementActionProviderModes(for: .modes_activate)
     )
-    var modes: DeviceElementControlModes
+    var mode: DeviceElementControlModes
     
     init() {}
     
-    init(device: DeviceEntity, modes: DeviceElementControlModes) {
+    init(device: DeviceEntity, circuit: DeviceElementControlModes) {
         self.device = device
-        self.modes = modes
+        self.mode = circuit
     }
     
     func perform() async throws -> some ProvidesDialog & IntentResult {
-        if device.id == -1 {
-            device = try await $device.requestValue("Выберите устройство")
+        DeviceQueryContext.shared.targetType = .modes_activate
+        if device.device_id == -1 {
+            return .result(
+                dialog: IntentDialog("Устройства не найдены"))
         }
-        if modes.id == -1 {
-            modes = try await $modes.requestValue("Выберите режим отопления")
+       
+        if mode.id == -1 {
+            throw $mode.needsValueError("Выберите режим отопления")
         }
-        print("modes", modes)
         
         func parseResponse(_ data: [String: Any]) -> String {
             if let data_device = data["device"] as? [String: Any],
@@ -501,59 +402,9 @@ struct ControlModesActionIntent: AppIntent {
             return "Нет ответа"
         }
         
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/modes/\(modes.id)/actions/activate", funcParse: parseResponse)
+        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/modes/\(mode.id)/actions/activate", funcParse: parseResponse)
         
-        print("response11", response)
-
-        return .result(
-            dialog: .init("\(device.device_name) + \(response)"))
-
-    }
-}
-
-@available(iOS 18.0, *)
-struct ControlTriggerActionIntentSimple: AppIntent {
-    static var title: LocalizedStringResource = "Активация простой кнопки"
-    static var description: IntentDescription = "Отправляет команду активации пользовательского элемента управления"
-    
-    @Parameter(
-        title: "Устройство",
-        description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .controls_trigger),
-        optionsProvider: DeviceActionProvider(for: .controls_trigger))
-    var device: DeviceEntity
-    
-    @Parameter(
-        title: "Кнопка",
-        description: "Выберите кнопку управления",
-        default: DeviceElementControlTriggerSimple(element_name: "Выбор", id: -1, entity_type: nil),
-        optionsProvider: DeviceElementActionProviderTriggerSimple(for: .controls_trigger)
-    )
-    var button: DeviceElementControlTriggerSimple
-    
-    init() {}
-    
-    init(device: DeviceEntity, button: DeviceElementControlTriggerSimple) {
-        self.device = device
-        self.button = button
-    }
-    
-    func perform() async throws -> some ProvidesDialog & IntentResult {
-        if device.id == -1 {
-            device = try await $device.requestValue("Выберите устройство")
-        }
-        
-        if button.id == -1 {
-            button = try await $button.requestValue("Выберите кнопку управления")
-        }
-        
-        func parseResponse(_ data: [String: Any]) -> String {
-            return "Команда отправлена"
-        }
-        
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/controls/\(button.id)/actions/trigger", funcParse: parseResponse)
-        
-        print("response11", response)
+        print("response11", response,device.device_id)
 
         return .result(
             dialog: .init("\(device.device_name) + \(response)"))
@@ -563,30 +414,30 @@ struct ControlTriggerActionIntentSimple: AppIntent {
 
 @available(iOS 18.0, *)
 struct ControlTriggerActionIntentComplex: AppIntent {
-    static var title: LocalizedStringResource = "Активация сложной кнопки"
+    static var title: LocalizedStringResource = "Активация кнопки"
     static var description: IntentDescription = "Отправляет команду активации пользовательского элемента управления"
     
     @Parameter(
         title: "Устройство",
         description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .controls_trigger),
+        default: TypeIntent.controls_trigger.defaultDeviceValue(),
         optionsProvider: DeviceActionProvider(for: .controls_trigger))
     var device: DeviceEntity
     
     @Parameter(
         title: "Кнопка",
         description: "Выберите кнопку управления",
-        default: DeviceElementControlTriggerComplex(element_name: "Выбор", id: -1, entity_type: nil),
+        default: DeviceElementControlTriggerComplex(element_name: "Выбор", id: -1, entity_type: "nil"),
         optionsProvider: DeviceElementActionProviderTriggerComplex(for: .controls_trigger)
     )
     var button: DeviceElementControlTriggerComplex
     
     @Parameter(
         title: "Действие",
-        description: "Выберите действие для кнопки")
+        description: "Выберите действие для кнопки",
+        default: ComplexActionEnum.enabled)
     var action_button: ComplexActionEnum
         
-    
     init() {}
     
     init(device: DeviceEntity, button: DeviceElementControlTriggerComplex) {
@@ -595,12 +446,15 @@ struct ControlTriggerActionIntentComplex: AppIntent {
     }
     
     func perform() async throws -> some ProvidesDialog & IntentResult {
-        if device.id == -1 {
-            device = try await $device.requestValue("Выберите устройство")
+        DeviceQueryContext.shared.targetType = .controls_trigger
+        
+        if device.device_id == -1 {
+            return .result(
+                dialog: IntentDialog("Устройства не найдены"))
         }
         
         if button.id == -1 {
-            button = try await $button.requestValue("Выберите кнопку управления")
+            throw $button.needsValueError("Выберите кнопку управления")
         }
         let paramsStr = action_button == ComplexActionEnum.enabled ? true: false
         
@@ -608,9 +462,9 @@ struct ControlTriggerActionIntentComplex: AppIntent {
             return "Команда отправлена"
         }
         
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/controls/\(button.id)/actions/trigger", funcParse: parseResponse, params: ["target_state":paramsStr])
+        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/controls/\(button.id)/actions/trigger", funcParse: parseResponse, params: ["target_state":paramsStr])
         
-        print("response11", response)
+        print("response11", response,device.device_id)
 
         return .result(
             dialog: .init("\(device.device_name) + \(response)"))
@@ -627,8 +481,8 @@ struct ControlGuardActionIntentEnable: AppIntent {
     @Parameter(
         title: "Устройство",
         description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .quard_zones_activate),
-        optionsProvider: DeviceActionProvider(for: .quard_zones_activate))
+        default: TypeIntent.guard_zones_activate.defaultDeviceValue(),
+        optionsProvider: DeviceActionProvider(for: .guard_zones_activate))
     
     var device: DeviceEntity
     
@@ -636,7 +490,7 @@ struct ControlGuardActionIntentEnable: AppIntent {
         title: "Охранная зона",
         description: "Выберите охранную зону",
         default: DeviceElementControlGuard(element_name: "Выбор", id: -1),
-        optionsProvider: DeviceElementActionProviderGuard(for: .controls_trigger)
+        optionsProvider: DeviceElementActionProviderGuard(for: .guard_zones_activate)
     )
     var guard_zone: DeviceElementControlGuard
     
@@ -652,17 +506,20 @@ struct ControlGuardActionIntentEnable: AppIntent {
     }
 
     func perform() async throws -> some ProvidesDialog & IntentResult {
-        if device.id == -1{
-            device = try await $device.requestValue("Выберите устройство")
+        DeviceQueryContext.shared.targetType = .guard_zones_activate
+        
+        if device.device_id == -1{
+            return .result(
+                dialog: IntentDialog("Устройства не найдены"))
         }
         
         if guard_zone.id == -1{
-            device = try await $device.requestValue("Выберите охранную зону")
+            throw $guard_zone.needsValueError("Выберите охранную зону")
         }
         
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/guard-zones/\(guard_zone.id)/actions/activate",funcParse: parseResponse, params: ["enable": true])
+        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/guard-zones/\(guard_zone.id)/actions/activate",funcParse: parseResponse, params: ["enable": true])
         
-        print("response11", response)
+        print("response11", response,device.device_id)
 
         return .result(
             dialog: IntentDialog("\(response)"))
@@ -677,8 +534,8 @@ struct ControlGuardActionIntentDisable: AppIntent {
     @Parameter(
         title: "Устройство",
         description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .quard_zones_activate),
-        optionsProvider: DeviceActionProvider(for: .quard_zones_activate))
+        default: TypeIntent.guard_zones_activate.defaultDeviceValue(),
+        optionsProvider: DeviceActionProvider(for: .guard_zones_activate))
     
     var device: DeviceEntity
     
@@ -686,7 +543,7 @@ struct ControlGuardActionIntentDisable: AppIntent {
         title: "Охранная зона",
         description: "Выберите охранную зону",
         default: DeviceElementControlGuardDisable(element_name: "Выбор", id: -1),
-        optionsProvider: DeviceElementActionProviderGuardDisable(for: .controls_trigger)
+        optionsProvider: DeviceElementActionProviderGuardDisable(for: .guard_zones_activate)
     )
     var guard_zone: DeviceElementControlGuardDisable
     
@@ -702,17 +559,20 @@ struct ControlGuardActionIntentDisable: AppIntent {
     }
 
     func perform() async throws -> some ProvidesDialog & IntentResult {
-        if device.id == -1{
-            device = try await $device.requestValue("Выберите устройство")
+        DeviceQueryContext.shared.targetType = .guard_zones_activate
+        
+        if device.device_id == -1{
+            return .result(
+                dialog: IntentDialog("Устройства не найдены"))
         }
         
         if guard_zone.id == -1{
-            device = try await $device.requestValue("Выберите охранную зону")
+            throw $guard_zone.needsValueError("Выберите охранную зону")
         }
         
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/guard-zones/\(guard_zone.id)/actions/activate",funcParse: parseResponse, params: ["enable": false])
+        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/guard-zones/\(guard_zone.id)/actions/activate",funcParse: parseResponse, params: ["enable": false])
         
-        print("response11", response)
+        print("response11", response,device.device_id)
 
         return .result(
             dialog: IntentDialog("\(response)"))
@@ -721,13 +581,13 @@ struct ControlGuardActionIntentDisable: AppIntent {
 
 @available(iOS 18.0, *)
 struct ControlScenariosActionIntent: AppIntent {
-    static var title: LocalizedStringResource = "Запуск предустановленного сценария"
+    static var title: LocalizedStringResource = "Запуск сценария"
     static var description: IntentDescription = "Активириует выполнение сценария на выбранном устройстве"
     
     @Parameter(
         title: "Устройство",
         description: "Выберите устройство для управления",
-        default: getDefaultValue(targetType: .scenarios_activate),
+        default: TypeIntent.scenarios_activate.defaultDeviceValue(),
         optionsProvider: DeviceActionProvider(for: .scenarios_activate))
     var device: DeviceEntity
     
@@ -735,7 +595,7 @@ struct ControlScenariosActionIntent: AppIntent {
         title: "Сценарий",
         description: "Выберите сценарий",
         default: DeviceElementControlScenarios(element_name: "Выбор", id: -1),
-        optionsProvider: DeviceElementActionProviderScenarios(for: .controls_trigger)
+        optionsProvider: DeviceElementActionProviderScenarios(for: .scenarios_activate)
     )
     var scenarios: DeviceElementControlScenarios
     
@@ -747,25 +607,29 @@ struct ControlScenariosActionIntent: AppIntent {
     }
     
     func perform() async throws -> some ProvidesDialog & IntentResult {
-        if device.id == -1 {
-            device = try await $device.requestValue("Выберите устройство")
+        DeviceQueryContext.shared.targetType = .scenarios_activate
+        
+        if device.device_id == -1 {
+            return .result(
+                dialog: IntentDialog("Устройства не найдены"))
         }
         
         if scenarios.id == -1 {
-            scenarios = try await $scenarios.requestValue("Выберите сценарий")
+            throw $scenarios.needsValueError("Выберите сценарий")
         }
         
         func parseResponse(_ data: [String: Any]) -> String {
             return "Команда отправлена"
         }
         
-        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.id)/scenarios/\(scenarios.id)/actions/activate", funcParse: parseResponse)
+        let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/scenarios/\(scenarios.id)/actions/activate", funcParse: parseResponse)
         
-        print("response11", response)
+        print("response11", response,device.device_id)
 
         return .result(
             dialog: .init("\(device.device_name) + \(response)"))
 
     }
 }
+
 
