@@ -7,8 +7,6 @@ struct DeviceElementControlGuard: AppEntity, Identifiable {
     static let typeDisplayRepresentation = TypeDisplayRepresentation(name: LocalizedStringResource("Device Element Control"))
     static let defaultQuery = DeviceElementControlQueryGuard()
     var id: Int
-
-    @Property(title: "Choose")
     
     var element_name: String
     
@@ -49,30 +47,11 @@ struct DeviceElementActionProviderGuard: DynamicOptionsProvider {
     }
     
     func results() async throws -> [DeviceElementControlGuard] {
-        guard let device else {
+        guard let intent = device else {
             return []
         }
     
-        guard let items = UserDefaults.standard.array(forKey: "ZONT_devices") as? [[String: Any]] else {
-            return []
-        }
-
-        let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.device.id }
-        
-        guard let filtered2:[String: Any] = filtered1.filter({ ($0["type"] as? String) == targetType.rawValue }).first,
-              let entity_ids = filtered2["entity_ids"] as? [[String: Any]] else {
-            return []
-        }
-        
-        return entity_ids.compactMap { item -> DeviceElementControlGuard? in
-            guard let id = item["entity_id"] as? Int,
-                  let element_name = item["entity_name"] as? String else { return nil }
-
-            return DeviceElementControlGuard(
-                element_name: element_name,
-                id: id
-            )
-        }
+        return loadDevicesControlGuard(device: intent.device)
     }
 }
 
@@ -86,7 +65,7 @@ private func loadDevicesControlGuard(device: DeviceEntity?) -> [DeviceElementCon
         return []
     }
 
-    let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.id }
+    let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.device_id }
     
     guard let filtered2:[String: Any] = filtered1.filter({ ($0["type"] as? String) == device.target_type }).first,
           let entity_ids = filtered2["entity_ids"] as? [[String: Any]] else {
@@ -109,8 +88,6 @@ struct DeviceElementControlGuardDisable: AppEntity, Identifiable {
     static let typeDisplayRepresentation = TypeDisplayRepresentation(name: LocalizedStringResource("Device Element Control"))
     static let defaultQuery = DeviceElementControlQueryGuardDisable()
     var id: Int
-
-    @Property(title: "Choose")
     
     var element_name: String
     
@@ -151,30 +128,11 @@ struct DeviceElementActionProviderGuardDisable: DynamicOptionsProvider {
     }
     
     func results() async throws -> [DeviceElementControlGuardDisable] {
-        guard let device else {
+        guard let intent = device else {
             return []
         }
     
-        guard let items = UserDefaults.standard.array(forKey: "ZONT_devices") as? [[String: Any]] else {
-            return []
-        }
-
-        let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.device.id }
-        
-        guard let filtered2:[String: Any] = filtered1.filter({ ($0["type"] as? String) == targetType.rawValue }).first,
-              let entity_ids = filtered2["entity_ids"] as? [[String: Any]] else {
-            return []
-        }
-        
-        return entity_ids.compactMap { item -> DeviceElementControlGuardDisable? in
-            guard let id = item["entity_id"] as? Int,
-                  let element_name = item["entity_name"] as? String else { return nil }
-
-            return DeviceElementControlGuardDisable(
-                element_name: element_name,
-                id: id
-            )
-        }
+        return loadDevicesControlGuardDisable(device: intent.device)
     }
 }
 
@@ -188,7 +146,7 @@ private func loadDevicesControlGuardDisable(device: DeviceEntity?) -> [DeviceEle
         return []
     }
 
-    let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.id }
+    let filtered1:[[String: Any]] = items.filter { ($0["device_id"] as? Int) == device.device_id }
     
     guard let filtered2:[String: Any] = filtered1.filter({ ($0["type"] as? String) == device.target_type }).first,
           let entity_ids = filtered2["entity_ids"] as? [[String: Any]] else {
