@@ -23,15 +23,13 @@ struct DeviceElementControlTriggerComplex: AppEntity, Identifiable {
     var id: Int
     
     var element_name: String
-    var entity_type: String?
     
     var displayRepresentation: DisplayRepresentation {
         DisplayRepresentation(title:"\(element_name)")}
     
-    init(element_name: String,id: Int, entity_type: String?) {
+    init(element_name: String,id: Int) {
         self.id = id
         self.element_name = element_name
-        self.entity_type = entity_type
     }
 }
 
@@ -90,13 +88,11 @@ private func loadDevicesControlTriggerComplex(device: DeviceEntity?) -> [DeviceE
     
     return entity_ids.compactMap { item -> DeviceElementControlTriggerComplex? in
         guard let id = item["entity_id"] as? Int,
-              let element_name = item["entity_name"] as? String,
-              let entity_type = item["entity_type"] as? String else { return nil }
+              let element_name = item["entity_name"] as? String else { return nil }
 
         return DeviceElementControlTriggerComplex(
             element_name: element_name,
-            id: id,
-            entity_type: entity_type
+            id: id
         )
     }
 }
