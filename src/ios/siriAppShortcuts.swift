@@ -2,7 +2,6 @@ import AppIntents
 
 @available(iOS 18.0, *)
 struct ShortcutsProvider: AppShortcutsProvider {
-    static var shortcutTileColor: ShortcutTileColor { return .teal}
 
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
