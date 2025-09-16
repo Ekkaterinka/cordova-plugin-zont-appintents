@@ -115,7 +115,7 @@ private func loadDevices(type: TypeIntent.RawValue? = nil) -> [DeviceEntity] {
     }
     let filtered = type == nil ? items : items.filter{ ($0["type"] as? String) == type}
     
-    return items.compactMap { item in
+    return filtered.compactMap { item in
         guard let device_id = item["device_id"] as? Int,
               let device_name = item["device_name"] as? String,
               let target_type = item["type"] as? String else { return nil }
