@@ -93,7 +93,7 @@ enum CommandStartEnum: String, AppEnum {
     case disabled = "деактивировать"
     case enabled = "запустить стандартную процедуру автозапуска (подогрев, затем пуск двигателя)"
     case engine = "запустить только двигатель"
-    case webasto = "запустить только подогреватель"
+    case webasto = "запустить только подогреватель (при наличии)"
     case delay = "увеличить время автозапуска"
     
     static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Command Start")
@@ -102,7 +102,7 @@ enum CommandStartEnum: String, AppEnum {
         .disabled: DisplayRepresentation("деактивировать"),
         .enabled: DisplayRepresentation("запустить стандартную процедуру автозапуска (подогрев, затем пуск двигателя)"),
         .engine: DisplayRepresentation("запустить только двигатель"),
-        .webasto: DisplayRepresentation("запустить только подогреватель"),
+        .webasto: DisplayRepresentation("запустить только подогреватель (при наличии)"),
         .delay: DisplayRepresentation("увеличить время автозапуска"),
         ]
 }
