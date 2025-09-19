@@ -7,7 +7,7 @@
         <clobbers target="registerForSiriCommands" />
     </js-module>
     <platform name="ios">
-        <preference name="deployment-target" value="18.0" />
+        <preference name="SwiftVersion" value="6.0" />
         <config-file target="*-Info.plist" parent="NSAppIntents">
             <array>
                 <string>siriAppIntent</string>
