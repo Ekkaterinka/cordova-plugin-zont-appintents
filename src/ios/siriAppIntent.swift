@@ -3,15 +3,13 @@ import SwiftUI
 
 @available(iOS 18.0, *)
 private func performDeviceRequest(device: DeviceEntity, apiUrl: String, funcParse: ([String: Any])->String, params: [String: Any]? = nil) async throws -> String {
-    guard device.device_id != -1 else {
-        return "Выберите устройство"
-    }
-    
     guard let token = UserDefaults.standard.object(forKey: "ZONT_token") as? String else {
         return "Пожалуйста авторизуйтесь в приложении ZONT"
     }
     
-    //zont.microline.ru
+    guard device.device_id != -1 else {
+        return "Выберите устройство"
+    }
     
     let baseUrl = "https://my.zont.online/api/widget/v3"
 
@@ -121,7 +119,7 @@ struct VehicleGuardActionIntentEnable: AppIntent {
         let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/vehicle/actions/guard",funcParse: parseResponse, params: ["enable": true])
 
         return .result(
-            dialog: IntentDialog("\(response)"))
+            dialog: .init("\(device.device_name) \(response)"))
     }
 }
 
@@ -179,7 +177,7 @@ struct VehicleGuardActionIntentDisable: AppIntent {
         let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/vehicle/actions/guard",funcParse: parseResponse, params: ["enable": false])
 
         return .result(
-            dialog: IntentDialog("\(response)"))
+            dialog: .init("\(device.device_name) \(response)"))
     }
 }
 
@@ -277,7 +275,7 @@ struct VehicleStartActionIntent: AppIntent {
         let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/vehicle/actions/start", funcParse: parseResponse,params: coomandStr)
 
         return .result(
-            dialog: .init("\(device.device_name) + \(response)"))
+            dialog: .init("\(device.device_name) \(response)"))
 
     }
 }
@@ -342,7 +340,7 @@ struct ControlCircuitsActionIntent: AppIntent {
         let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/circuits/\(heating_circuit.id)/actions/target-temp", funcParse: parseResponse,params: ["target_temp": target_temp])
 
         return .result(
-            dialog: .init("\(device.device_name) + \(response)"))
+            dialog: .init("\(device.device_name) \(response)"))
 
     }
 }
@@ -386,19 +384,22 @@ struct ControlModesActionIntent: AppIntent {
         }
         
         func parseResponse(_ data: [String: Any]) -> String {
-            if let data_device = data["device"] as? [String: Any],
-               let modes = data_device["modes"] as? [[String: Any]],
-               let modeOne = modes.filter({ ($0["id"] as? Int) == mode.id }).first,
-               let current_mode = modeOne["applied"] as? [Int] {
-                return "В контуре установлен режим \(mode.element_name)"
+            guard let data_device = data["device"] as? [String: Any],
+                  let modes = data_device["modes"] as? [[String: Any]],
+                  let modeOne = modes.filter({ ($0["id"] as? Int) == mode.id }).first else {
+                return "Нет ответа"
             }
-            return "Нет ответа"
+            if ((modeOne["applied"]) != nil) {
+                return "В контуре установлен режим \(mode.element_name)"
+            } else {
+                return "Нет ответа"
+            }
         }
         
         let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/modes/\(mode.id)/actions/activate", funcParse: parseResponse)
 
         return .result(
-            dialog: .init("\(device.device_name) + \(response)"))
+            dialog: .init("\(device.device_name) \(response)"))
     }
 }
 
@@ -455,7 +456,7 @@ struct ControlTriggerActionIntentComplex: AppIntent {
         let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/controls/\(button.id)/actions/trigger", funcParse: parseResponse, params: ["target_state":paramsStr])
 
         return .result(
-            dialog: .init("\(device.device_name) + \(response)"))
+            dialog: .init("\(device.device_name) \(response)"))
 
     }
 }
@@ -508,7 +509,7 @@ struct ControlGuardActionIntentEnable: AppIntent {
         let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/guard-zones/\(guard_zone.id)/actions/activate",funcParse: parseResponse, params: ["enable": true])
 
         return .result(
-            dialog: IntentDialog("\(response)"))
+            dialog: .init("\(device.device_name) \(response)"))
     }
 }
 
@@ -559,7 +560,7 @@ struct ControlGuardActionIntentDisable: AppIntent {
         let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/guard-zones/\(guard_zone.id)/actions/activate",funcParse: parseResponse, params: ["enable": false])
 
         return .result(
-            dialog: IntentDialog("\(response)"))
+            dialog: .init("\(device.device_name) \(response)"))
     }
 }
 
@@ -609,7 +610,7 @@ struct ControlScenariosActionIntent: AppIntent {
         let response = try await performDeviceRequest(device: device, apiUrl: "/devices/\(device.device_id)/scenarios/\(scenarios.id)/actions/activate", funcParse: parseResponse)
 
         return .result(
-            dialog: .init("\(device.device_name) + \(response)"))
+            dialog: .init("\(device.device_name) \(response)"))
 
     }
 }
