@@ -1,15 +1,13 @@
 <?xml version='1.0' encoding='utf-8'?>
 <plugin id="cordova-plugin-zont-appintents" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>ZontAppintents</name>
-    <engines>
-        <engine name="apple-ios" version=">=18.0" />
-    </engines>
     <description>Cordova Plugin fo appintents IOS16+</description>
     <keywords>appIntents, ios</keywords>
     <js-module name="siriPlugin" src="www/siriPlugin.js">
         <clobbers target="registerForSiriCommands" />
     </js-module>
     <platform name="ios">
+        <hook type="before_plugin_add" src="scripts/beforeAdd.js" />
         <config-file target="*-Info.plist" parent="NSAppIntents">
             <array>
                 <string>siriAppIntent</string>

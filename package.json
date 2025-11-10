@@ -17,5 +17,9 @@
     "ios"
   ],
   "author": "Ekaterina Belova",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "cordova-common": "^6.0.0",
+    "q": "^2.0.3"
+  }
 }
