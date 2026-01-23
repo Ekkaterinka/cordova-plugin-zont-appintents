@@ -31,7 +31,7 @@ private func performDeviceRequest(device: DeviceEntity, apiUrl: String, funcPars
     guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
         return String(data: data, encoding: .utf8) ?? "Нет ответа"
     }
-    print("performDeviceRequest", json)
+
     if json["ok"] as? Bool == true {
         return funcParse(json)
     }  else {
